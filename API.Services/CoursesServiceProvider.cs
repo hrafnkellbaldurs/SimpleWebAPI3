@@ -3,7 +3,8 @@ using API.Services.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using API.Services.Entities;
-using System;
+using API.Models.Courses.Students;
+using API.Services.Exceptions;
 
 
 namespace API.Services
@@ -49,6 +50,7 @@ namespace API.Services
                               StartDate = c.StartDate,
                               EndDate = c.EndDate,
                               Name = ct.Name,
+                              Semester = c.Semester,
                               StudentCount = (from cr in _db.CourseRegistrations
                                               where c.ID == cr.ID
                                               select cr.StudentID).ToList().Count
@@ -76,6 +78,7 @@ namespace API.Services
                               StartDate = c.StartDate,
                               EndDate = c.EndDate,
                               Name = ct.Name,
+                              Semester = c.Semester,
                               Students = (from cr in _db.CourseRegistrations
                                           join s in _db.Students
                                           on cr.StudentID equals s.ID
@@ -89,7 +92,8 @@ namespace API.Services
 
             if (result == null)
             {
-                throw new Exception();
+                // If the course is not found:
+                throw new AppObjectNotFoundException();
             }
 
             return result;
@@ -99,20 +103,44 @@ namespace API.Services
         /// Replaces the course with the given id's StartDate and EndDate with the given information
         /// </summary>
         /// <param name="id">The ID of the course to update</param>
-        /// <param name="course">The course object to update with</param>
-        public void UpdateCourse(int id, UpdateCourseViewModel course)
+        /// <param name="model">The course object to update with</param>
+        public CourseDTO UpdateCourse(int id, UpdateCourseViewModel model)
         {
             //Finds the course asked for
-            var query = _db.Courses.First(x => x.ID == id);
+            var course = _db.Courses.SingleOrDefault(x => x.ID == id);
 
-            if (query == null)
+            if (course == null)
             {
-                throw new Exception();
+                // If the course is not found:
+                throw new AppObjectNotFoundException();
             }
-            query.StartDate = course.StartDate;
-            query.EndDate = course.EndDate;
+            course.StartDate = model.StartDate;
+            course.EndDate = model.EndDate;
 
             _db.SaveChanges();
+
+            var templateId = _db.CourseTemplates.SingleOrDefault(x => x.TemplateID == course.TemplateID);
+
+            if (templateId == null)
+            {
+                throw new AppServerErrorException();
+            }
+
+            var studentCount = (from cr in _db.CourseRegistrations
+                                where course.ID == cr.ID
+                                select cr.StudentID).ToList().Count();
+
+            var updatedCourse = new CourseDTO
+            {
+                ID = course.ID,
+                EndDate = course.EndDate,
+                StartDate = course.StartDate,
+                Name = templateId.Name,
+                Semester = course.Semester,
+                StudentCount = studentCount
+            };
+
+            return updatedCourse;
         }
 
 
@@ -123,25 +151,27 @@ namespace API.Services
         public void DeleteCourse(int id)
         {
             //Finds the course that is to be deleted
-            var courseToDelete = _db.Courses.Where(x => x.ID == id).SingleOrDefault();
+            var courseToDelete = _db.Courses.SingleOrDefault(x => x.ID == id);
 
             if (courseToDelete == null)
             {
-                throw new Exception();
+                // If course is not found:
+                throw new AppObjectNotFoundException();
             }
 
             // Remove the course from the database
             _db.Courses.Remove(courseToDelete);
 
             // Get a list of all the course registrations registered with the course id that we just deleted
-            List<CourseRegistration> courseRegistrationsToDelete = _db.CourseRegistrations.Where(x => x.CourseID == id).ToList();
+            var courseRegistrationsToDelete = _db.CourseRegistrations.Where(x => x.CourseID == id).ToList();
 
             // Delete each row containing the deleted course id from the CourseRegistrations 
-            foreach (CourseRegistration cr in courseRegistrationsToDelete)
+            foreach (var cr in courseRegistrationsToDelete)
             {
                 if (cr == null)
                 {
-                    throw new Exception();
+                    // If a course registation is not found:
+                    throw new AppObjectNotFoundException();
                 }
                 _db.CourseRegistrations.Remove(cr);
             }
@@ -156,15 +186,15 @@ namespace API.Services
         /// <returns>A list of students in the class with the given id</returns>
         public List<StudentDTO> GetStudentsInCourse(int id)
         {
-            //Finds the appropriate course
-            var courseExistance = _db.Courses.Where(x => x.ID == id).SingleOrDefault();
+            // Finds the appropriate course
+            var courseExistance = _db.Courses.SingleOrDefault(x => x.ID == id);
 
             if (courseExistance == null)
             {
-                throw new Exception();
+                throw new AppObjectNotFoundException();
             }
 
-            //Finds each student enrolled in that course
+            // Finds each student enrolled in that course
             var result = (from cr in _db.CourseRegistrations
                           join s in _db.Students
                           on cr.StudentID equals s.ID
@@ -182,46 +212,57 @@ namespace API.Services
         /// Adds a pre existing student to a pre existing course.
         /// </summary>
         /// <param name="id">The ID of the course to add the student to</param>
-        /// <param name="student">A AddStudentViewModel containing the student that is to be added</param>
-        public void AddStudentToCourse(int id, AddStudentViewModel student)
+        /// <param name="model">A AddStudentViewModel containing the student that is to be added</param>
+        public StudentDTO AddStudentToCourse(int id, AddStudentViewModel model)
         {
-            //Checking if student exists in the database
-            var studentExistance = _db.Students.SingleOrDefault(x => x.SSN == student.SSN);
+            // Checking if student exists in the database
+            var student = _db.Students.SingleOrDefault(x => x.SSN == model.SSN);
 
-            if (studentExistance == null)
+            if (student == null)
             {
-                throw new ApplicationException();
+                // If the student cannot be found:
+                throw new AppObjectNotFoundException();
             }
 
-            //Checking if the course exists in the database
-            var courseExistance = _db.Courses.SingleOrDefault(x => x.ID == id);
+            // Checking if the course exists in the database
+            var course = _db.Courses.SingleOrDefault(x => x.ID == id);
 
-            if (courseExistance == null)
+            if (course == null)
             {
-                throw new ApplicationException();
+                // If the course cannot be found:
+                throw new AppObjectNotFoundException();
             }
 
-            //Checking if the student is already enrolled in the course
+            // Checking if the student is already enrolled in the course
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
                                           where cr.CourseID == id
-                                          where studentExistance.ID == cr.StudentID
+                                          where student.ID == cr.StudentID
                                           select cr).SingleOrDefault();
 
-            //If he is not enrolled, we enroll him in the course
+            // If he is not enrolled, we enroll him in the course
             if (studentAlreadyInCourse == null)
             {
-                CourseRegistration newRegistration = new CourseRegistration
+                var newRegistration = new CourseRegistration
                 {
                     CourseID = id,
-                    StudentID = studentExistance.ID
+                    StudentID = student.ID
                 };
 
                 _db.CourseRegistrations.Add(newRegistration);
                 _db.SaveChanges();
+
+                var studentDto = new StudentDTO
+                {
+                    Name = student.Name,
+                    SSN = student.SSN
+                };
+
+                return studentDto;
             }
+            // If he is already enrolled, there is a conflict
             else
             {
-                throw new AggregateException();
+                throw new AppConflictException();
             }
         }
     }

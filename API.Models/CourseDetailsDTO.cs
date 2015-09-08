@@ -41,6 +41,14 @@ namespace API.Models
         /// </summary>
         public DateTime EndDate { get; set; }
 
+        /// <summary>
+        /// The semester that a course is tought. 
+        /// Example: "20151" -> Spring 2015, 
+        ///          "20152" -> Summer 2015, 
+        ///          "20153" -> Fall 2015
+        /// </summary>
+        public string Semester { get; set; }
+
 
     }
 }

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-using Microsoft.Build.Framework;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace API.Models
+namespace API.Models.Courses.Students
 {
     /// <summary>
     /// This class represents the data sent by the client to add a student to a course.
@@ -14,6 +12,6 @@ namespace API.Models
         /// Example: "1234567890"
         /// </summary>
         [Required]
-        public String  SSN { get; set; }
+        public string  SSN { get; set; }
     }
 }
