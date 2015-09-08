@@ -49,6 +49,11 @@ namespace API.Models
         /// </summary>
         public string Semester { get; set; }
 
+        /// <summary>
+        /// Maximum number of students allowed in course
+        /// </summary>
+        public int MaxStudents { get; set; }
+
 
     }
 }
