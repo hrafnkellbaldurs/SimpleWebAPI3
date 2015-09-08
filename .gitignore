@@ -185,8 +185,7 @@ Backup*/
 UpgradeLog*.XML
 UpgradeLog*.htm
 
-# SQL Server files
-*.mdf
+# SQL Server files #.mdf removed
 *.ldf
 
 # Business Intelligence projects
