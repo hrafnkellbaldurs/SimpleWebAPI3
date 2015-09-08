@@ -30,5 +30,11 @@ namespace API.Services.Entities
         /// Example: 1
         /// </summary>
         public int StudentID { get; set; }
+
+        /// <summary>
+        /// If the student is active in the course
+        /// Example: true
+        /// </summary>
+        public bool Active { get; set; }
     }
 }
