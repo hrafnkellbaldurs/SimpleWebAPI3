@@ -140,6 +140,42 @@ namespace SimpleWebAPI3.Controllers
         }
 
         /// <summary>
+        /// Adds a course to the database and returns 201 if successful
+        /// </summary>
+        /// <param name="course"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("")]
+        [ResponseType(typeof(CourseDTO))]
+        public IHttpActionResult AddCourse(AddCourseViewModel course)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    var result = _service.AddCourse(course);
+                    var location = Url.Link("GetCourse", new { id = result.ID });
+                    return Created(location, result);
+
+                }
+                catch (AppObjectNotFoundException)
+                {
+                    return NotFound();
+                }
+                catch (AppBadRequestException)
+                {
+                    return BadRequest();
+                }
+            }
+            else
+            {
+                return StatusCode(HttpStatusCode.PreconditionFailed);
+            }
+            
+        }
+
+
+        /// <summary>
         /// Adds the given Student to the Course with the given ID and returns 201 status code
         /// If the course or student do not previously exist in the database, 404 is returned
         /// If the student is already enrolled in the course, status code 409 is returned

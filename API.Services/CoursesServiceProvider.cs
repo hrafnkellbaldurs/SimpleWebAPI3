@@ -265,5 +265,63 @@ namespace API.Services
                 throw new AppConflictException();
             }
         }
+
+        /// <summary>
+        /// Adds a course with a pre existing CourseTemplate to the database,
+        /// If there is no template available an exception is thrown,
+        /// Or if the course object is not valid an exception is thrown
+        /// </summary>
+        /// <param name="course">A course object containing the information to create the new course</param>
+        /// <returns>The course object</returns>
+        public CourseDTO AddCourse(AddCourseViewModel course)
+        {
+            var courseTemplate = _db.CourseTemplates.SingleOrDefault(x => x.TemplateID == course.TemplateID);
+
+            if (courseTemplate == null)
+            {
+                throw new AppObjectNotFoundException();
+            }
+
+            var newCourse = new Course
+            {
+                EndDate = course.EndDate,
+                StartDate = course.StartDate,
+                TemplateID = course.TemplateID,
+                MaxStudents = course.MaxStudents,
+                Semester = course.Semester
+
+            };
+
+            if (newCourse == null)
+            {
+                throw new AppBadRequestException();
+            }
+
+            _db.Courses.Add(newCourse);
+            _db.SaveChanges();
+
+            var courseId = _db.Courses.SingleOrDefault(x => x.ID == newCourse.ID);
+
+            var studentCount = (from cr in _db.CourseRegistrations
+                               where courseId.ID == cr.ID
+                               select cr.StudentID).ToList().Count();
+
+            var courseDto = new CourseDTO
+            {
+                ID = courseId.ID,
+                StartDate = course.StartDate,
+                EndDate = course.EndDate,
+                Name = courseTemplate.Name,
+                Semester = course.Semester,
+                StudentCount = studentCount
+            };
+
+            if (courseDto == null)
+            {
+                throw new AppBadRequestException();
+            }
+
+            return courseDto;
+        }
     }
 }
