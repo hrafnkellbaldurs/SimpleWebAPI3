@@ -4,7 +4,6 @@ using System.Web.Http;
 using API.Models;
 using API.Models.Courses.Students;
 using API.Services;
-using System;
 using System.Web.Http.Description;
 using API.Services.Exceptions;
 
@@ -52,7 +51,7 @@ namespace SimpleWebAPI3.Controllers
             {
                 return _service.GetSingleCourse(id);
             }
-            catch (AppObjectNotFoundException e)
+            catch (AppObjectNotFoundException)
             {
                 //return 404
                 throw new HttpResponseException(HttpStatusCode.NotFound);
@@ -73,7 +72,7 @@ namespace SimpleWebAPI3.Controllers
             {
                 return _service.GetStudentsInCourse(id);
             }
-            catch (AppObjectNotFoundException e)
+            catch (AppObjectNotFoundException)
             {
                 //return 404
                 throw new HttpResponseException(HttpStatusCode.NotFound);
@@ -84,7 +83,7 @@ namespace SimpleWebAPI3.Controllers
         /// Updates the start and end dates of a pre existing course and returns 201
         /// If the course doesn't exist an exception is thrown and 404 is returned
         /// </summary>
-        /// <param name="id">ID of the course to be updated<param>
+        /// <param name="id">ID of the course to be updated</param>
         /// <param name="model">UpdateCourseViewModel object to be updated with</param>
         /// <returns>A 201 status code if successful, but 404 if not</returns>
         [HttpPut]
@@ -99,12 +98,12 @@ namespace SimpleWebAPI3.Controllers
                     var result = _service.UpdateCourse(id, model);
                     return Content(HttpStatusCode.Created, result);
                 }
-                catch (AppObjectNotFoundException e)
+                catch (AppObjectNotFoundException)
                 {
                     //return 404
                     return NotFound();
                 }
-                catch (AppServerErrorException e)
+                catch (AppServerErrorException)
                 {
                     //return 500
                     return InternalServerError();
@@ -130,7 +129,7 @@ namespace SimpleWebAPI3.Controllers
             {
                 _service.DeleteCourse(id);
             }
-            catch (AppObjectNotFoundException e)
+            catch (AppObjectNotFoundException)
             {
                 //return 404
                 return NotFound();
@@ -159,12 +158,12 @@ namespace SimpleWebAPI3.Controllers
                     var result = _service.AddStudentToCourse(id, student);
                     return Content(HttpStatusCode.Created, result);
                 }
-                catch (AppObjectNotFoundException e)
+                catch (AppObjectNotFoundException)
                 {
                     //return 404
                     return NotFound();
                 }
-                catch (AppConflictException e)
+                catch (AppConflictException)
                 {
                     //return 409
                     return Conflict();
