@@ -30,8 +30,8 @@ namespace API.Services.Repositories
         public DbSet<Student> Students { get; set; }
 
         /// <summary>
-        /// This represents the waitinglist for every course
+        /// This represents the waiting list for every course
         /// </summary>
-        public DbSet<WaitingListEntry> WaitingListsEntries { get; set; }
+        public DbSet<WaitingListEntry> WaitingListEntries { get; set; }
     }
 }
