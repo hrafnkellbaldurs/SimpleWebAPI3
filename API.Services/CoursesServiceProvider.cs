@@ -2,6 +2,8 @@
 using API.Services.Repositories;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using API.Services.Entities;
 using API.Models.Courses.Students;
 using API.Services.Exceptions;
@@ -236,7 +238,8 @@ namespace API.Services
             // Checking if the student is already enrolled in the course
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
                                           where cr.CourseID == id
-                                          where student.ID == cr.StudentID
+                                          where student.ID == cr.StudentID 
+                                          where cr.Active == true
                                           select cr).SingleOrDefault();
 
             // If he is not enrolled, we enroll him in the course
@@ -245,7 +248,8 @@ namespace API.Services
                 var newRegistration = new CourseRegistration
                 {
                     CourseID = id,
-                    StudentID = student.ID
+                    StudentID = student.ID,
+                    Active = true
                 };
 
                 _db.CourseRegistrations.Add(newRegistration);
@@ -300,7 +304,15 @@ namespace API.Services
             _db.Courses.Add(newCourse);
             _db.SaveChanges();
 
+            // Get the course object for the ID of the returned CourseDTO
             var courseId = _db.Courses.SingleOrDefault(x => x.ID == newCourse.ID);
+
+            if (courseId == null)
+            {
+                // If the course is not found, there are inconsistancies
+                // in the database:
+                throw new AppServerErrorException();
+            }
 
             var studentCount = (from cr in _db.CourseRegistrations
                                where courseId.ID == cr.ID
@@ -323,5 +335,55 @@ namespace API.Services
 
             return courseDto;
         }
+
+        /// <summary>
+        /// Removes the given student from the given course
+        /// </summary>
+        /// <param name="id">The ID of the course</param>
+        /// <param name="ssn">The SSN of the student</param>
+        public void RemoveStudentFromCourse(int id, string ssn)
+        {
+            //var courseRegistration = _db.CourseRegistrations.SingleOrDefault(x => x.CourseID == id);
+
+            // Checking if student exists in the database
+            var student = _db.Students.SingleOrDefault(x => x.SSN == ssn);
+
+            if (student == null)
+            {
+                // If the student cannot be found:
+                throw new AppObjectNotFoundException();
+            }
+
+            // Checking if the course exists in the database
+            var course = _db.Courses.SingleOrDefault(x => x.ID == id);
+
+            if (course == null)
+            {
+                // If the course cannot be found:
+                throw new AppObjectNotFoundException();
+            }
+
+            // Checking if the student is already enrolled in the course
+            var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
+                                          where cr.CourseID == id
+                                          where student.ID == cr.StudentID
+                                          where cr.Active == true
+                                          select cr).SingleOrDefault();
+
+            // If he is enrolled, we deactivate him
+            if (studentAlreadyInCourse != null)
+            {
+                _db.CourseRegistrations.Remove(studentAlreadyInCourse);
+                _db.SaveChanges();
+            }
+            // If he is not currently enrolled, we do nothing
+            else
+            {
+                throw new AppPreconditionFailedException();
+            }
+        }
+
+
     }
+    
 }

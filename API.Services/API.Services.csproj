@@ -58,6 +58,7 @@
     <Compile Include="Exceptions\AppBadRequestException.cs" />
     <Compile Include="Exceptions\AppConflictException.cs" />
     <Compile Include="Exceptions\AppObjectNotFoundException.cs" />
+    <Compile Include="Exceptions\AppPreconditionFailedException.cs" />
     <Compile Include="Exceptions\AppServerErrorException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\AppDataContext.cs" />

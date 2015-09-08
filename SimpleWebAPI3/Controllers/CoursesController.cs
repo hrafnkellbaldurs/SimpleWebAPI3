@@ -128,14 +128,14 @@ namespace SimpleWebAPI3.Controllers
             try
             {
                 _service.DeleteCourse(id);
+                //return 204 if deletion was successful
+                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (AppObjectNotFoundException)
             {
                 //return 404
                 return NotFound();
             }
-            //return 204 if deletion was successful
-            return StatusCode(HttpStatusCode.NoContent);
         }
 
         /// <summary>
@@ -207,6 +207,34 @@ namespace SimpleWebAPI3.Controllers
                 
             }
             else
+            {
+                return StatusCode(HttpStatusCode.PreconditionFailed);
+            }
+        }
+
+        /// <summary>
+        /// Removes the student with the given SSN from the course with the given
+        /// ID and returns 204 status code. If the student is not in the school
+        /// or the course does not exist; it returns 404 status code 
+        /// </summary>
+        /// <param name="id">The ID of the course</param>
+        /// <param name="ssn">The SSN of the student</param>
+        /// <returns>201 status code if successful, else 404</returns>
+        [HttpDelete]
+        [Route("{id:int}/students/{ssn}")]
+        public IHttpActionResult RemoveStudentFromCourse(int id, string ssn)
+        {
+            try
+            {
+                _service.RemoveStudentFromCourse(id, ssn);
+                //return 204 if deletion was successful
+                return StatusCode(HttpStatusCode.NoContent);
+            }
+            catch (AppObjectNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (AppPreconditionFailedException)
             {
                 return StatusCode(HttpStatusCode.PreconditionFailed);
             }
