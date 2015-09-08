@@ -28,5 +28,10 @@ namespace API.Services.Repositories
         /// This represents the Students table
         /// </summary>
         public DbSet<Student> Students { get; set; }
+
+        /// <summary>
+        /// This represents the waitinglist for every course
+        /// </summary>
+        public DbSet<WaitingListEntry> WaitingListsEntries { get; set; }
     }
 }
