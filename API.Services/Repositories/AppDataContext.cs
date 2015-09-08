@@ -32,6 +32,6 @@ namespace API.Services.Repositories
         /// <summary>
         /// This represents the waiting list for every course
         /// </summary>
-        public DbSet<WaitingListEntry> WaitingListentries { get; set; }
+        public DbSet<WaitingListEntry> WaitingListEntries { get; set; }
     }
 }
