@@ -82,7 +82,7 @@ namespace SimpleWebAPI3.Controllers
         /// Updates the start and end dates of a pre existing course and returns 201
         /// If the course doesn't exist an exception is thrown and 404 is returned
         /// </summary>
-        /// <param name="id">ID of the course to be updated<param>
+        /// <param name="id"> ID of the course to be updated <param>
         /// <param name="course">UpdateCourseViewModel object to be updated with</param>
         /// <returns>A 201 status code if successful, but 404 if not</returns>
         [HttpPut]
