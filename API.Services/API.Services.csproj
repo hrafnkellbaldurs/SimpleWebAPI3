@@ -54,6 +54,7 @@
     <Compile Include="Entities\CourseRegistration.cs" />
     <Compile Include="Entities\CourseTemplate.cs" />
     <Compile Include="Entities\Student.cs" />
+    <Compile Include="Entities\WaitingListEntry.cs" />
     <Compile Include="Exceptions\AppConflictException.cs" />
     <Compile Include="Exceptions\AppObjectNotFoundException.cs" />
     <Compile Include="Exceptions\AppServerErrorException.cs" />
