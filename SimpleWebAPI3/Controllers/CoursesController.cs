@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
 using API.Models;
@@ -210,6 +211,57 @@ namespace SimpleWebAPI3.Controllers
             {
                 return StatusCode(HttpStatusCode.PreconditionFailed);
             }
+        }
+
+        /// <summary>
+        /// Gets the waitinglist for the course with the given ID,
+        /// returns 404 if there is no course with the given ID.
+        /// </summary>
+        /// <param name="id">ID if the course to get the waitinglist from</param>
+        /// <returns>A list of all students on the waitinglist</returns>
+        [HttpGet]
+        [Route("{id}/waitinglist")]
+        public List<WaitingListDTO> GetWaitingListInACourse(int id)
+        {
+            try
+            {
+                return _service.GetWaitingListForCourse(id);
+            }
+            catch (AppObjectNotFoundException)
+            {
+                //return 404
+                throw new HttpResponseException(HttpStatusCode.NotFound);
+            }
+        }
+
+        [HttpPost]
+        [Route("{id}/waitinglist")]
+        public IHttpActionResult AddStudentToWaitingList(int id, AddStudentViewModel student)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _service.AddStudentToWaitingList(id, student);
+                    return StatusCode(HttpStatusCode.OK);
+                }
+                catch (AppObjectNotFoundException)
+                {
+                    //return 404
+                    return NotFound();
+                }
+                catch (AppConflictException)
+                {
+                    //return 409
+                    return Conflict();
+                }
+                
+            }
+            else
+            {
+                return StatusCode(HttpStatusCode.PreconditionFailed);
+            }
+
         }
 
         /// <summary>

@@ -2,8 +2,6 @@
 using API.Services.Repositories;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using API.Services.Entities;
 using API.Models.Courses.Students;
 using API.Services.Exceptions;
@@ -238,13 +236,14 @@ namespace API.Services
             // Checking if the student is already enrolled in the course
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
                                           where cr.CourseID == id
-                                          where student.ID == cr.StudentID 
+                                          where student.ID == cr.StudentID
                                           where cr.Active == true
                                           select cr).SingleOrDefault();
 
             // If he is not enrolled, we enroll him in the course
             if (studentAlreadyInCourse == null)
             {
+                //Create a new CourseRegistration
                 var newRegistration = new CourseRegistration
                 {
                     CourseID = id,
@@ -252,9 +251,11 @@ namespace API.Services
                     Active = true
                 };
 
+                //Add it to the database
                 _db.CourseRegistrations.Add(newRegistration);
                 _db.SaveChanges();
 
+                //Make a new StudentDTO to return to the client
                 var studentDto = new StudentDTO
                 {
                     Name = student.Name,
@@ -266,6 +267,9 @@ namespace API.Services
             // If he is already enrolled, there is a conflict
             else
             {
+                //TODO:If the student is already in the course but set as inactive, we check the MaxStudent and possibly enroll him again 
+                
+                //We don't to this
                 throw new AppConflictException();
             }
         }
@@ -279,6 +283,7 @@ namespace API.Services
         /// <returns>The course object</returns>
         public CourseDTO AddCourse(AddCourseViewModel course)
         {
+            //Check if there is a template for the course
             var courseTemplate = _db.CourseTemplates.SingleOrDefault(x => x.TemplateID == course.TemplateID);
 
             if (courseTemplate == null)
@@ -286,6 +291,7 @@ namespace API.Services
                 throw new AppObjectNotFoundException();
             }
 
+            //Create a new Course object
             var newCourse = new Course
             {
                 EndDate = course.EndDate,
@@ -301,6 +307,7 @@ namespace API.Services
                 throw new AppBadRequestException();
             }
 
+            //Add the new course to the database
             _db.Courses.Add(newCourse);
             _db.SaveChanges();
 
@@ -316,8 +323,10 @@ namespace API.Services
 
             var studentCount = (from cr in _db.CourseRegistrations
                                where courseId.ID == cr.ID
+                               where cr.Active == true
                                select cr.StudentID).ToList().Count();
 
+            //Make a new CourseDTO to return to the client
             var courseDto = new CourseDTO
             {
                 ID = courseId.ID,
@@ -365,10 +374,10 @@ namespace API.Services
 
             // Checking if the student is already enrolled in the course
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
-                                          where cr.CourseID == id
-                                          where student.ID == cr.StudentID
-                                          where cr.Active == true
-                                          select cr).SingleOrDefault();
+                where cr.CourseID == id
+                where student.ID == cr.StudentID
+                where cr.Active == true
+                select cr).SingleOrDefault();
 
             // If he is enrolled, we deactivate him
             if (studentAlreadyInCourse != null)
@@ -383,7 +392,75 @@ namespace API.Services
             }
         }
 
+        /// <summary>
+        /// Gets a list of students on a waitinglist for the course with the given ID.
+        /// If there is no course with the given ID an exception is thown.
+        /// </summary>
+        /// <param name="id">Id of the course</param>
+        /// <returns>A list of students on a waitinglist</returns>
+        public List<WaitingListDTO> GetWaitingListForCourse(int id)
+        {
+            //Check if course exists
+            var courseExistance = _db.Courses.SingleOrDefault(x => x.ID == id);
 
+            if (courseExistance == null)
+            {
+                throw new AppObjectNotFoundException();
+            }
+
+            //Get list of students on waitinglist
+            var result = (from wl in _db.WaitingListEntries
+                          join s in _db.Students
+                          on wl.StudentID equals s.ID
+                          where wl.CourseID == id
+                          select new WaitingListDTO
+                          {
+                              Name = s.Name,
+                              SSN = s.SSN
+                          }).ToList();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Adds student to a waitinglist in the course with the given ID.
+        /// If there is no course with the given ID, exception is thrown,
+        /// </summary>
+        /// <param name="id">ID of the course's waitinglist</param>
+        /// <param name="student">AddStudentViewModel object containing the students information</param>
+        public void AddStudentToWaitingList(int id, AddStudentViewModel student)
+        {
+            //Check if course exists
+            var courseExistance = _db.Courses.SingleOrDefault(x => x.ID == id);
+
+            if (courseExistance == null)
+            {
+                throw new AppObjectNotFoundException();
+            }
+
+            //Check if students exists
+            var studentExistance = _db.Students.SingleOrDefault(x => x.SSN == student.SSN);
+
+            if (studentExistance == null)
+            {
+                throw new AppObjectNotFoundException();
+            }
+
+            //Create a new WaitingListEntry
+            var waitingListEntry = new WaitingListEntry
+            {
+                CourseID = id,
+                StudentID = studentExistance.ID
+            };
+
+            //Add the entry to the database
+            _db.WaitingListEntries.Add(waitingListEntry);
+            _db.SaveChanges();
+
+        }
     }
+
+
+    
     
 }

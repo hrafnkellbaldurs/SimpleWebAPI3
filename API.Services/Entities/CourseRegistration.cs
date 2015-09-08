@@ -32,8 +32,8 @@ namespace API.Services.Entities
         public int StudentID { get; set; }
 
         /// <summary>
-        /// Whether a student is currently enrolled in the class or not
-        /// Example: true if enrolled
+        /// If the student is active in the course
+        /// Example: true
         /// </summary>
         public bool Active { get; set; }
     }
