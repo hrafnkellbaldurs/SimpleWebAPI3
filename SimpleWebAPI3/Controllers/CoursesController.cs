@@ -2,9 +2,11 @@
 using System.Net;
 using System.Web.Http;
 using API.Models;
+using API.Models.Courses.Students;
 using API.Services;
 using System;
 using System.Web.Http.Description;
+using API.Services.Exceptions;
 
 namespace SimpleWebAPI3.Controllers
 {
@@ -50,7 +52,7 @@ namespace SimpleWebAPI3.Controllers
             {
                 return _service.GetSingleCourse(id);
             }
-            catch (Exception e)
+            catch (AppObjectNotFoundException e)
             {
                 //return 404
                 throw new HttpResponseException(HttpStatusCode.NotFound);
@@ -71,7 +73,7 @@ namespace SimpleWebAPI3.Controllers
             {
                 return _service.GetStudentsInCourse(id);
             }
-            catch (Exception e)
+            catch (AppObjectNotFoundException e)
             {
                 //return 404
                 throw new HttpResponseException(HttpStatusCode.NotFound);
@@ -82,27 +84,37 @@ namespace SimpleWebAPI3.Controllers
         /// Updates the start and end dates of a pre existing course and returns 201
         /// If the course doesn't exist an exception is thrown and 404 is returned
         /// </summary>
-        /// <param name="id"> ID of the course to be updated <param>
-        /// <param name="course">UpdateCourseViewModel object to be updated with</param>
+        /// <param name="id">ID of the course to be updated<param>
+        /// <param name="model">UpdateCourseViewModel object to be updated with</param>
         /// <returns>A 201 status code if successful, but 404 if not</returns>
         [HttpPut]
         [Route("{id:int}")]
-        public IHttpActionResult UpdateCourse(int id, UpdateCourseViewModel course)
+        [ResponseType(typeof(CourseDTO))]
+        public IHttpActionResult UpdateCourse(int id, UpdateCourseViewModel model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                _service.UpdateCourse(id, course);
+                try
+                {
+                    var result = _service.UpdateCourse(id, model);
+                    return Content(HttpStatusCode.Created, result);
+                }
+                catch (AppObjectNotFoundException e)
+                {
+                    //return 404
+                    return NotFound();
+                }
+                catch (AppServerErrorException e)
+                {
+                    //return 500
+                    return InternalServerError();
+                }
             }
-            catch (Exception e)
+            else
             {
-                //return 404
-                return NotFound();
+                return StatusCode(HttpStatusCode.PreconditionFailed);
             }
-
-            var result = GetCourse(id);
-            var location = Url.Link("GetCourse", new { id = id });
-            //return 201
-            return Created(location, result);
+            
         }
 
         /// <summary>
@@ -118,13 +130,13 @@ namespace SimpleWebAPI3.Controllers
             {
                 _service.DeleteCourse(id);
             }
-            catch (Exception e)
+            catch (AppObjectNotFoundException e)
             {
                 //return 404
                 return NotFound();
             }
-            //return 204
-            throw new HttpResponseException(HttpStatusCode.NoContent);
+            //return 204 if deletion was successful
+            return StatusCode(HttpStatusCode.NoContent);
         }
 
         /// <summary>
@@ -140,26 +152,29 @@ namespace SimpleWebAPI3.Controllers
         [ResponseType(typeof(StudentDTO))]
         public IHttpActionResult AddStudentToCourse(int id, AddStudentViewModel student)
         {
-            try
+            if (ModelState.IsValid)
             {
-                //var result = _service.AddStudentToCourse(id, student);
-                _service.AddStudentToCourse(id, student);
+                try
+                {
+                    var result = _service.AddStudentToCourse(id, student);
+                    return Content(HttpStatusCode.Created, result);
+                }
+                catch (AppObjectNotFoundException e)
+                {
+                    //return 404
+                    return NotFound();
+                }
+                catch (AppConflictException e)
+                {
+                    //return 409
+                    return Conflict();
+                }
+                
             }
-            catch (ApplicationException e)
+            else
             {
-                //return 404
-                return NotFound();
+                return StatusCode(HttpStatusCode.PreconditionFailed);
             }
-            catch (AggregateException r)
-            {
-                //return 409
-                return Conflict();
-            }
-
-            var result = GetCourse(id);
-            var location = Url.Link("GetCourse", new { id = id });
-            //return 201
-            return Created(location, result);
         }
     }
 }
