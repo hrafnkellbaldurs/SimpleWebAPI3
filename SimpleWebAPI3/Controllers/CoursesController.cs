@@ -200,10 +200,10 @@ namespace SimpleWebAPI3.Controllers
                     //return 404
                     return NotFound();
                 }
-                catch (AppConflictException)
+                catch (AppPreconditionFailedException)
                 {
-                    //return 409
-                    return Conflict();
+                    //return 412
+                    return StatusCode(HttpStatusCode.PreconditionFailed);
                 }
                 
             }

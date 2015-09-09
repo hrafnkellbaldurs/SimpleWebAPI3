@@ -233,6 +233,18 @@ namespace API.Services
                 throw new AppObjectNotFoundException();
             }
 
+            var studentCount = (from cr in _db.CourseRegistrations
+                                where id == cr.CourseID
+                                where cr.Active == true // TODO: check if this statement makes sense
+                                select cr.StudentID).ToList().Count();
+
+            // If the max count of student has been reached for this class,
+            // return 412
+            if (studentCount == course.MaxStudents)
+            {
+                throw new AppPreconditionFailedException();
+            }
+
             // Checking if the student is already enrolled in the course
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
                                           where cr.CourseID == id
@@ -270,7 +282,7 @@ namespace API.Services
                 //TODO:If the student is already in the course but set as inactive, we check the MaxStudent and possibly enroll him again 
                 
                 //We don't to this
-                throw new AppConflictException();
+                throw new AppPreconditionFailedException();
             }
         }
 
@@ -382,7 +394,7 @@ namespace API.Services
             // If he is enrolled, we deactivate him
             if (studentAlreadyInCourse != null)
             {
-                _db.CourseRegistrations.Remove(studentAlreadyInCourse);
+                studentAlreadyInCourse.Active = false;
                 _db.SaveChanges();
             }
             // If he is not currently enrolled, we do nothing
