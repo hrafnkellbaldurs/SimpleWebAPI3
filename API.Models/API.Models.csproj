@@ -42,14 +42,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Courses\Students\AddStudentViewModel.cs" />
-    <Compile Include="CourseDetailsDTO.cs" />
-    <Compile Include="CourseDTO.cs" />
-    <Compile Include="AddCourseViewModel.cs" />
+    <Compile Include="ViewModels\Students\AddStudentViewModel.cs" />
+    <Compile Include="DTOs\Courses\CourseDetailsDTO.cs" />
+    <Compile Include="DTOs\Courses\CourseDTO.cs" />
+    <Compile Include="ViewModels\Courses\AddCourseViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StudentDTO.cs" />
-    <Compile Include="UpdateCourseViewModel.cs" />
-    <Compile Include="WaitingListDTO.cs" />
+    <Compile Include="DTOs\Students\StudentDTO.cs" />
+    <Compile Include="ViewModels\Courses\UpdateCourseViewModel.cs" />
+    <Compile Include="DTOs\Courses\WaitingListDTO.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,5 +1,6 @@
-﻿using API.Services.Entities;
-using System.Data.Entity;
+﻿using System.Data.Entity;
+using API.Services.Entities.Courses;
+using API.Services.Entities.Students;
 
 
 namespace API.Services.Repositories

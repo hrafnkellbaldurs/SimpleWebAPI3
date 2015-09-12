@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace API.Models
+﻿
+namespace API.Models.DTOs.Courses
 {
     /// <summary>
     /// This class represents a waitinglist in a course to the client

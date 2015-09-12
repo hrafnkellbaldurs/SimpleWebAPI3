@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Web.Http;
-using API.Models;
-using API.Models.Courses.Students;
 using API.Services;
 using System.Web.Http.Description;
+using API.Models.DTOs.Courses;
+using API.Models.DTOs.Students;
+using API.Models.ViewModels.Courses;
+using API.Models.ViewModels.Students;
 using API.Services.Exceptions;
 
 namespace SimpleWebAPI3.Controllers
@@ -33,6 +34,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns>A list of course objects</returns>
         [HttpGet]
         [Route("")]
+        [ResponseType(typeof(List<CourseDTO>))]
         public List<CourseDTO> GetCourses(string semester = null)
         {
             return _service.GetCoursesBySemester(semester);
@@ -46,6 +48,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns> The course object </returns>
         [HttpGet]
         [Route("{id:int}", Name = "GetCourse")]
+        [ResponseType(typeof(CourseDetailsDTO))]
         public CourseDetailsDTO GetCourse(int id)
         {
             try
@@ -67,6 +70,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns>A List of Students in the given course</returns>
         [HttpGet]
         [Route("{id:int}/students")]
+        [ResponseType(typeof(List<StudentDTO>))]
         public List<StudentDTO> GetStudentsInCourse(int id)
         {
             try
@@ -124,6 +128,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns>If succeeded: HTTP status code 204, else HTTP status code 404</returns>
         [HttpDelete]
         [Route("{id:int}")]
+        [ResponseType(typeof(HttpStatusCode))]
         public IHttpActionResult DeleteCourse(int id)
         {
             try
@@ -221,6 +226,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns>A list of all students on the waitinglist</returns>
         [HttpGet]
         [Route("{id}/waitinglist")]
+        [ResponseType(typeof(List<WaitingListDTO>))]
         public List<WaitingListDTO> GetWaitingListInACourse(int id)
         {
             try
@@ -244,6 +250,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("{id}/waitinglist")]
+        [ResponseType(typeof(HttpStatusCode))]
         public IHttpActionResult AddStudentToWaitingList(int id, AddStudentViewModel student)
         {
             if (ModelState.IsValid)
@@ -282,6 +289,7 @@ namespace SimpleWebAPI3.Controllers
         /// <returns>201 status code if successful, else 404</returns>
         [HttpDelete]
         [Route("{id:int}/students/{ssn}")]
+        [ResponseType(typeof(HttpStatusCode))]
         public IHttpActionResult RemoveStudentFromCourse(int id, string ssn)
         {
             try

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Services.Entities
+namespace API.Services.Entities.Courses
 {
     /// <summary>
     /// This class represents a single course template for a course

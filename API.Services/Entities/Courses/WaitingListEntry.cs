@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Services.Entities
+namespace API.Services.Entities.Courses
 {
     /// <summary>
     /// This class represents a single entry in the waiting list.

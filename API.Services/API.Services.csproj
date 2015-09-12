@@ -50,11 +50,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoursesServiceProvider.cs" />
-    <Compile Include="Entities\Course.cs" />
-    <Compile Include="Entities\CourseRegistration.cs" />
-    <Compile Include="Entities\CourseTemplate.cs" />
-    <Compile Include="Entities\Student.cs" />
-    <Compile Include="Entities\WaitingListEntry.cs" />
+    <Compile Include="Entities\Courses\Course.cs" />
+    <Compile Include="Entities\Courses\CourseRegistration.cs" />
+    <Compile Include="Entities\Courses\CourseTemplate.cs" />
+    <Compile Include="Entities\Students\Student.cs" />
+    <Compile Include="Entities\Courses\WaitingListEntry.cs" />
     <Compile Include="Exceptions\AppBadRequestException.cs" />
     <Compile Include="Exceptions\AppConflictException.cs" />
     <Compile Include="Exceptions\AppObjectNotFoundException.cs" />

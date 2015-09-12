@@ -1,12 +1,11 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace API.Services.Entities
+namespace API.Services.Entities.Students
 {
-    [Table("Students")]
     /// <summary>
     /// This class represents a student at a school
     /// </summary>
+    [Table("Students")]
     class Student
     {
         /// <summary>

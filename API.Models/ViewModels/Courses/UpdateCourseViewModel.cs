@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System;
 
-namespace API.Models
+namespace API.Models.ViewModels.Courses
 {
     /// <summary>
     /// This class represents the data sent by the client to update a course.
