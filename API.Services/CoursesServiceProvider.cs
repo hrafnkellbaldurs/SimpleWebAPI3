@@ -199,6 +199,7 @@ namespace API.Services
                           join s in _db.Students
                           on cr.StudentID equals s.ID
                           where cr.CourseID == id
+                          where cr.Active != false
                           select new StudentDTO
                           {
                               Name = s.Name,
@@ -235,7 +236,7 @@ namespace API.Services
 
             var studentCount = (from cr in _db.CourseRegistrations
                                 where id == cr.CourseID
-                                where cr.Active == true // TODO: check if this statement makes sense
+                                where cr.Active
                                 select cr.StudentID).ToList().Count();
 
             // If the max count of student has been reached for this class,
@@ -244,6 +245,11 @@ namespace API.Services
             {
                 throw new AppPreconditionFailedException();
             }
+
+            var studentOnWaitingList = (from wl in _db.WaitingListEntries
+                                        where wl.CourseID == id
+                                        where student.ID == wl.StudentID
+                                        select wl).SingleOrDefault();
 
             // Checking if the student is already enrolled in the course
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
@@ -255,6 +261,13 @@ namespace API.Services
             // If he is not enrolled, we enroll him in the course
             if (studentAlreadyInCourse == null)
             {
+                //remove the student from waitinglist if he was on it
+                if (studentOnWaitingList != null)
+                {
+                    _db.WaitingListEntries.Remove(studentOnWaitingList);
+                    _db.SaveChanges();
+                }
+
                 //Create a new CourseRegistration
                 var newRegistration = new CourseRegistration
                 {
@@ -388,7 +401,7 @@ namespace API.Services
             var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
                 where cr.CourseID == id
                 where student.ID == cr.StudentID
-                where cr.Active == true
+                where cr.Active
                 select cr).SingleOrDefault();
 
             // If he is enrolled, we deactivate him
@@ -456,6 +469,29 @@ namespace API.Services
             if (studentExistance == null)
             {
                 throw new AppObjectNotFoundException();
+            }
+
+            //Check if student is already enrolled in course
+            var studentAlreadyInCourse = (from cr in _db.CourseRegistrations
+                                          where cr.CourseID == id
+                                          where studentExistance.ID == cr.StudentID
+                                          where cr.Active
+                                          select cr).SingleOrDefault();
+
+            if (studentAlreadyInCourse != null)
+            {
+                throw new AppConflictException();
+            }
+
+            //Check if student is already on the waitinglist in the course
+            var studentWaitingListExistance = (from wl in _db.WaitingListEntries
+                                               where wl.CourseID == id
+                                               where studentExistance.ID == wl.StudentID
+                                               select wl).SingleOrDefault();
+
+            if (studentWaitingListExistance != null)
+            {
+                throw new AppConflictException();
             }
 
             //Create a new WaitingListEntry

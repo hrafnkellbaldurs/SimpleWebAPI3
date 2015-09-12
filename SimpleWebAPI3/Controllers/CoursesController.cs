@@ -129,14 +129,14 @@ namespace SimpleWebAPI3.Controllers
             try
             {
                 _service.DeleteCourse(id);
-                //return 204 if deletion was successful
-                return StatusCode(HttpStatusCode.NoContent);
             }
             catch (AppObjectNotFoundException)
             {
                 //return 404
                 return NotFound();
             }
+            //return 204 if deletion was successful
+            return StatusCode(HttpStatusCode.NoContent);
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace SimpleWebAPI3.Controllers
                 }
                 catch (AppPreconditionFailedException)
                 {
-                    //return 412
+                    //return 409
                     return StatusCode(HttpStatusCode.PreconditionFailed);
                 }
                 
@@ -234,6 +234,14 @@ namespace SimpleWebAPI3.Controllers
             }
         }
 
+        /// <summary>
+        /// Adds student to waiting list in a course with the given id, returns 200 if successful.
+        /// If student is already enrolled and active in course or already on waitinglist, 412 is returned to client.
+        /// If course or student don't exist, a 404 is returned to client .
+        /// </summary>
+        /// <param name="id">ID if the course</param>
+        /// <param name="student">AddStudentViewModel with students SSN</param>
+        /// <returns></returns>
         [HttpPost]
         [Route("{id}/waitinglist")]
         public IHttpActionResult AddStudentToWaitingList(int id, AddStudentViewModel student)
@@ -253,9 +261,9 @@ namespace SimpleWebAPI3.Controllers
                 catch (AppConflictException)
                 {
                     //return 409
-                    return Conflict();
+                    return StatusCode(HttpStatusCode.PreconditionFailed);
                 }
-                
+
             }
             else
             {
@@ -267,7 +275,7 @@ namespace SimpleWebAPI3.Controllers
         /// <summary>
         /// Removes the student with the given SSN from the course with the given
         /// ID and returns 204 status code. If the student is not in the school
-        /// or the course does not exist; it returns 404 status code 
+        /// or the course does not exist; it returns 404 status code
         /// </summary>
         /// <param name="id">The ID of the course</param>
         /// <param name="ssn">The SSN of the student</param>
